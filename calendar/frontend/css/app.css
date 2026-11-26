@@ -1794,17 +1794,150 @@ details[open] > summary { margin-bottom: 4px; color: var(--text); }
   .leave-top-btn span { display: none; }
   .leave-top-btn { padding: 7px 9px; }
 
-  /* Keep grids legible: scroll sideways instead of squeezing columns. */
-  .view { overflow-x: auto; }
-  .month { min-width: 560px; }
-  .week { min-width: 720px; }
-  .resource { min-width: 520px; }
+  /* Phone layout: no sideways scrolling. Seven month days fit the screen,
+     the week view renders a vertical agenda, and day columns shrink to fit. */
+  .view { overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .month, .week, .resource { min-width: 0; width: 100%; }
+  .month { height: auto; min-height: 100%; }
+  .month-head { height: 24px; }
+  .month-head div { font-size: 10px; letter-spacing: 0; }
+  .month-grid { grid-template-rows: repeat(6, minmax(54px, auto)); }
+  .day-cell { padding: 2px; }
+  .day-head { min-height: 20px; justify-content: center; }
+  .daynum { width: 24px; height: 24px; font-size: 11px; }
+  .holiday-tag, .day-cell .chip, .day-cell .more-btn { display: none; }
+  .day-cell.has-events::after {
+    content: attr(data-count);
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: var(--blue-soft);
+    color: var(--blue-dark);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+  }
 
-  .modal-backdrop { padding: 10px; align-items: flex-start; }
+  /* Vertical day-by-day agenda produced by views/week.js on phones. */
+  .agenda {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 10px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .agenda-day {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(60, 64, 67, 0.06);
+  }
+  .agenda-day.today { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue); }
+  .agenda-day.holiday { background: var(--holiday-bg); }
+  .agenda-day.common-leave { background: var(--common-leave-bg); }
+  .agenda-day-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--bg-alt);
+  }
+  .agenda-day.today .agenda-day-head { background: var(--blue-soft); }
+  .agenda-day-head strong { font-size: 13px; color: var(--text-strong); }
+  .agenda-holiday {
+    display: block;
+    margin-top: 2px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--holiday-text);
+  }
+  .agenda-count { font-size: 11px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .agenda-body { padding: 4px 8px 8px; }
+  .agenda-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 6px;
+    border: 0;
+    border-bottom: 1px solid var(--line-soft);
+    background: transparent;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+  }
+  .agenda-item:last-child { border-bottom: 0; }
+  .agenda-time {
+    flex: 0 0 62px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--blue-dark);
+    font-variant-numeric: tabular-nums;
+  }
+  .agenda-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-strong);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .agenda-name small {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .agenda-empty, .agenda-more {
+    padding: 10px 6px;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .agenda-more { font-weight: 600; color: var(--blue-dark); }
+
+  .resource-scroll { overflow-x: auto; }
+  .resource-head, .resource-body { font-size: 11px; }
+
+  /* Booking/edit form becomes a bottom sheet, not a full-screen takeover. */
+  .modal-backdrop { align-items: flex-end; padding: 0; }
   .modal {
-    max-height: calc(100vh - 20px);
-    padding: 16px;
-    border-radius: 10px;
+    position: relative;
+    width: 100%;
+    max-width: none;
+    max-height: min(80vh, 80dvh);
+    border-radius: 18px 18px 0 0;
+    padding: 26px 16px max(16px, env(safe-area-inset-bottom));
+    box-shadow: 0 -6px 24px rgba(32, 33, 36, 0.25);
+  }
+  .modal::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 38px;
+    height: 4px;
+    border-radius: 3px;
+    background: var(--line);
+  }
+  .modal h2 { font-size: 17px; }
+  .modal-actions {
+    position: sticky;
+    bottom: 0;
+    background: var(--bg);
+    padding-top: 8px;
   }
   .form-grid .two { grid-template-columns: 1fr; }
   .popover { max-width: calc(100vw - 20px); }
@@ -1813,28 +1946,7 @@ details[open] > summary { margin-bottom: 4px; color: var(--text); }
 @media (max-width: 420px) {
   .view-switch button { padding: 6px 8px; font-size: 12px; }
   .topbar-right { gap: 6px; }
-  .month { min-width: 520px; }
-  .week { min-width: 660px; }
-}
-
-
-@media (max-width: 1100px) {
-  .brand { min-width: auto; }
-  .brand-text span { display: none; }
-  .role-picker span { display: none; }
-}
-
-@media (max-width: 900px) {
-  .sidebar { display: none; }
-  .range-label { font-size: 16px; }
-  .topbar { gap: 8px; padding: 0 10px; }
-  .view-switch button { padding: 6px 9px; }
-}
-
-@media (max-width: 700px) {
-  .brand-text { display: none; }
-  #newApptBtn { padding: 7px 10px; }
-  .doctor-select { max-width: 130px; }
-  .leave-top-btn span { display: none; }
-  .leave-top-btn { padding: 7px 9px; }
+  .agenda-time { flex-basis: 56px; font-size: 10px; }
+  .agenda-name { font-size: 12px; }
+  .month-grid { grid-template-rows: repeat(6, minmax(50px, auto)); }
 }

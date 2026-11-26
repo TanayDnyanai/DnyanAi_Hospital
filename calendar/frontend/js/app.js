@@ -1571,8 +1571,17 @@ function bindGlobalEvents() {
     setSidebar(!sidebar.classList.contains("mobile-open"))
   );
   sidebarBackdrop?.addEventListener("click", () => setSidebar(false));
+  let wasPhone = window.matchMedia("(max-width: 700px)").matches;
   window.addEventListener("resize", () => {
     if (window.innerWidth > 900) setSidebar(false);
+    // The phone renderers (week agenda / compact day columns) are chosen at
+    // render time, so re-render when a resize crosses the phone breakpoint.
+    const isPhone = window.matchMedia("(max-width: 700px)").matches;
+    if (isPhone !== wasPhone) {
+      wasPhone = isPhone;
+      closePopover();
+      renderView();
+    }
   });
 
   $("todayBtn").addEventListener("click", () => {

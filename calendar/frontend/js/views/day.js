@@ -20,7 +20,12 @@ export function renderDay(root, ctx) {
     ...new Set(doctors.flatMap((block) => block.slots.map((slot) => slot.time))),
   ].sort();
 
-  const colWidth = doctors.length <= 3 ? "260px" : "minmax(154px, 1fr)";
+  const isPhone = window.matchMedia("(max-width: 700px)").matches;
+  const colWidth = isPhone
+    ? "minmax(104px, 1fr)"
+    : doctors.length <= 3
+      ? "260px"
+      : "minmax(154px, 1fr)";
   const columns = `56px repeat(${doctors.length}, ${colWidth})`;
 
   const headCells = doctors.map((block) => {

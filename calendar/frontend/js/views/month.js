@@ -42,6 +42,7 @@ export function renderMonth(root, ctx) {
     const active = day.events
       .filter((event) => event.is_active)
       .sort((a, b) => a.start.localeCompare(b.start));
+    if (active.length) classes.push("has-events");
     const shown = active.slice(0, MAX_CHIPS);
     let body = shown
       .map((event) => {
@@ -64,7 +65,8 @@ export function renderMonth(root, ctx) {
       body += `<button class="more-btn" data-day="${day.date}">+${remaining} more</button>`;
     }
 
-    return `<div class="${classes.join(" ")}" data-date="${day.date}" data-out="${out ? 1 : 0}">
+    return `<div class="${classes.join(" ")}" data-date="${day.date}" data-out="${out ? 1 : 0}"
+         data-count="${active.length}">
         <div class="day-head">
           <span class="daynum">${date.getDate()}</span>
           ${holidayTag}
@@ -97,8 +99,12 @@ export function renderMonth(root, ctx) {
   root.querySelectorAll(".day-cell").forEach((cell) => {
     cell.addEventListener("click", () => {
       const out = cell.dataset.out === "1";
-      if (out) ctx.goToDay(cell.dataset.date);
-      else ctx.openBooking({ date: cell.dataset.date });
+      // Phones show a compact month: tap a day to open it, not a full-screen form.
+      if (out || window.matchMedia("(max-width: 700px)").matches) {
+        ctx.goToDay(cell.dataset.date);
+      } else {
+        ctx.openBooking({ date: cell.dataset.date });
+      }
     });
   });
 

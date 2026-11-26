@@ -94,6 +94,70 @@ function eventHtml(item, ctx, doctorsById) {
 export function renderWeek(root, ctx) {
   const { data, meta } = ctx;
   const days = data.days;
+
+  // Phones get a vertical day list instead of a sideways-scrolling 7-column grid.
+  if (window.matchMedia("(max-width: 700px)").matches) {
+    const doctorsById = new Map((meta.doctors || []).map((d) => [d.id, d]));
+    const index = new Map();
+    days.forEach((day) => day.events.forEach((event) => index.set(event.id, event)));
+
+    const cards = days.map((day) => {
+      const date = parseISO(day.date);
+      const weekday = WEEKDAYS_SHORT[(date.getDay() + 6) % 7];
+      const active = day.events
+        .filter((event) => event.is_active)
+        .sort((a, b) => a.start.localeCompare(b.start));
+      const classes = ["agenda-day"];
+      if (day.is_today) classes.push("today");
+      const clinicLeave = day.holiday?.scope === "CLINIC";
+      if (day.is_holiday) classes.push(clinicLeave ? "common-leave" : "holiday");
+
+      const items = active.slice(0, 4).map((event) => {
+        const doctor = doctorsById.get(event.doctor_id);
+        const subtitle = shortName(doctor?.full_name || event.doctor_name || "");
+        return `<button type="button" class="agenda-item" data-event-id="${escapeHtml(event.id)}">
+            <span class="agenda-time">${timeHHMM(event.start)}</span>
+            <span class="agenda-name">${escapeHtml(shortName(event.patient_name))}
+              <small>${escapeHtml(subtitle)}${event.token_number ? ` · #${escapeHtml(event.token_number)}` : ""}</small>
+            </span>
+          </button>`;
+      }).join("");
+
+      const body = items
+        ? items + (active.length > 4
+            ? `<div class="agenda-more">+${active.length - 4} more — tap the day to view all</div>` : "")
+        : `<div class="agenda-empty">No appointments — tap to book</div>`;
+
+      return `<section class="${classes.join(" ")}" data-date="${day.date}">
+          <header class="agenda-day-head">
+            <div>
+              <strong>${weekday}, ${date.getDate()}</strong>
+              ${day.holiday ? `<span class="agenda-holiday">${escapeHtml(day.holiday.name)}</span>` : ""}
+            </div>
+            <span class="agenda-count">${active.length} booked</span>
+          </header>
+          <div class="agenda-body">${body}</div>
+        </section>`;
+    }).join("");
+
+    root.innerHTML = `<div class="agenda">${cards}</div>`;
+
+    root.querySelectorAll(".agenda-item").forEach((node) => {
+      node.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const found = index.get(node.dataset.eventId);
+        if (found) ctx.openEvent(found, node);
+      });
+    });
+    root.querySelectorAll(".agenda-day").forEach((node) => {
+      node.addEventListener("click", (event) => {
+        if (event.target.closest(".agenda-item")) return;
+        ctx.goToDay(node.dataset.date);
+      });
+    });
+    return;
+  }
+
   const sessions = meta.sessions || [];
   const axisStart = minutesOfDay(sessions[0]?.start || "09:00");
   const axisEnd = minutesOfDay(sessions[sessions.length - 1]?.end || "17:00");
