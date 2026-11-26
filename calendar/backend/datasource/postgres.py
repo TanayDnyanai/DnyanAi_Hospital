@@ -14,10 +14,11 @@ from __future__ import annotations
 import json
 import threading
 from datetime import date, datetime, time, timedelta
+from functools import wraps
 from typing import Any
 
 import psycopg
-from psycopg import rows
+from psycopg import InterfaceError, OperationalError, rows
 from psycopg.errors import DeadlockDetected, SerializationFailure, UniqueViolation
 from psycopg_pool import ConnectionPool
 
@@ -86,6 +87,31 @@ def _parse_datetime(value: datetime | str | None) -> datetime | None:
         return None
 
 
+_CONNECTION_ERRORS = (OperationalError, InterfaceError)
+_WRITE_RETRY_ERRORS = (SerializationFailure, DeadlockDetected) + _CONNECTION_ERRORS
+
+
+def _retry_stale_connection(fn: Any) -> Any:
+    """Retry once when Neon closes an idle pooled connection mid-request.
+
+    The pool discards a broken connection when it is returned, so the second
+    attempt gets a fresh one. Without this, the server's idle timeout surfaces
+    to users as a random 500 on an otherwise healthy endpoint.
+    """
+
+    @wraps(fn)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        for attempt in range(2):
+            try:
+                return fn(*args, **kwargs)
+            except _CONNECTION_ERRORS:
+                if attempt == 1:
+                    raise
+        raise AssertionError("unreachable")
+
+    return wrapper
+
+
 class PostgresDataSource(DataSource):
     def __init__(self, dsn: str | None = None, unpooled_dsn: str | None = None) -> None:
         self.dsn = dsn or config.NEON_DATABASE_URL
@@ -151,7 +177,7 @@ class PostgresDataSource(DataSource):
             for attempt in range(3):
                 try:
                     return operation()
-                except (SerializationFailure, DeadlockDetected):
+                except _WRITE_RETRY_ERRORS:
                     if attempt == 2:
                         raise
         raise AssertionError("unreachable")
@@ -181,6 +207,7 @@ class PostgresDataSource(DataSource):
             "opening_hours": "Monday to Saturday, 9 AM to 6 PM",
         }
 
+    @_retry_stale_connection
     def get_doctors(self) -> list[Doctor]:
         # One round trip instead of two: join profiles and schedules. On Neon
         # each query costs ~70ms, so this halves the cost of every endpoint
@@ -270,6 +297,7 @@ class PostgresDataSource(DataSource):
             or address_from_json(row["patient_profile_address"]),
         )
 
+    @_retry_stale_connection
     def list_events(
         self, start: date, end: date, doctor_id: str | None = None
     ) -> list[Appointment]:
@@ -288,6 +316,7 @@ class PostgresDataSource(DataSource):
             rows_ = conn.execute(query, params).fetchall()
         return [self._row_to_appointment(row) for row in rows_]
 
+    @_retry_stale_connection
     def get_appointment(self, appointment_id: str) -> Appointment | None:
         try:
             identifier = int(appointment_id)
@@ -639,6 +668,7 @@ class PostgresDataSource(DataSource):
 
     # -- patients ----------------------------------------------------------
 
+    @_retry_stale_connection
     def lookup_patient(self, phone: str) -> Patient | None:
         with self._connect() as conn:
             row = conn.execute(
@@ -656,6 +686,7 @@ class PostgresDataSource(DataSource):
             address=address_from_json(row["address"]),
         )
 
+    @_retry_stale_connection
     def list_patient_appointments(self, phone: str) -> list[Appointment]:
         with self._connect() as conn:
             rows_ = conn.execute(
@@ -668,6 +699,7 @@ class PostgresDataSource(DataSource):
 
     # -- holidays ----------------------------------------------------------
 
+    @_retry_stale_connection
     def list_holidays(self, start: date, end: date) -> list[Holiday]:
         with self._connect() as conn:
             rows_ = conn.execute(
@@ -691,6 +723,7 @@ class PostgresDataSource(DataSource):
             for row in rows_
         ]
 
+    @_retry_stale_connection
     def get_holiday(self, holiday_id: str) -> Holiday | None:
         try:
             identifier = int(holiday_id)
@@ -945,6 +978,7 @@ class PostgresDataSource(DataSource):
         self._run_write(operation)
         return True
 
+    @_retry_stale_connection
     def list_audit(self, limit: int = 100) -> list[dict[str, Any]]:
         with self._connect() as conn:
             rows_ = conn.execute(
