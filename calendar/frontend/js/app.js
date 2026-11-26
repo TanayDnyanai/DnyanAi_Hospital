@@ -1558,6 +1558,23 @@ function bindEmbedBridge() {
 }
 
 function bindGlobalEvents() {
+  const sidebar = $("sidebar");
+  const sidebarToggle = $("sidebarToggleBtn");
+  const sidebarBackdrop = $("sidebarBackdrop");
+  const setSidebar = (open) => {
+    if (!sidebar || !sidebarToggle || !sidebarBackdrop) return;
+    sidebar.classList.toggle("mobile-open", open);
+    sidebarToggle.setAttribute("aria-expanded", String(open));
+    sidebarBackdrop.hidden = !open;
+  };
+  sidebarToggle?.addEventListener("click", () =>
+    setSidebar(!sidebar.classList.contains("mobile-open"))
+  );
+  sidebarBackdrop?.addEventListener("click", () => setSidebar(false));
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 900) setSidebar(false);
+  });
+
   $("todayBtn").addEventListener("click", () => {
     state.date = state.meta.today;
     refresh();

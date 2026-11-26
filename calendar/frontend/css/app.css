@@ -1720,6 +1720,104 @@ details[open] > summary { margin-bottom: 4px; color: var(--text); }
 
 /* ---------------- Responsive ---------------- */
 
+.sidebar-toggle { display: none; }
+.sidebar-backdrop { display: none; }
+
+@media (max-width: 1100px) {
+  .brand { min-width: auto; }
+  .brand-text span { display: none; }
+  .role-picker span { display: none; }
+}
+
+/* Tablet and phone: the top bar becomes three compact rows/flex groups,
+   and the sidebar turns into a drawer instead of disappearing entirely. */
+@media (max-width: 900px) {
+  .topbar {
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+  .brand { flex: 0 0 auto; }
+  .toolbar { order: 2; flex: 1 1 100%; gap: 6px; }
+  .range-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 16px;
+  }
+  .topbar-right {
+    order: 3;
+    flex: 1 1 100%;
+    margin-left: 0;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .topbar-right::-webkit-scrollbar { display: none; }
+  .view-switch button { padding: 6px 10px; }
+
+  .sidebar-toggle { display: grid; }
+  .sidebar {
+    display: none;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: min(300px, 86vw);
+    z-index: 90;
+    box-shadow: var(--shadow-2);
+  }
+  .sidebar.mobile-open { display: flex; }
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(32, 33, 36, 0.45);
+    z-index: 80;
+  }
+  .stats-strip { height: 38px; padding: 0 10px; }
+}
+
+@media (max-width: 700px) {
+  .brand-text { display: none; }
+  .topbar { padding: 6px 8px; gap: 6px; }
+  .toolbar .btn.ghost { padding: 6px 8px; }
+  .icon-btn { width: 30px; height: 30px; }
+  .range-label { font-size: 14px; }
+  #newApptBtn { padding: 7px 10px; }
+  .doctor-select { max-width: 130px; }
+  .leave-top-btn span { display: none; }
+  .leave-top-btn { padding: 7px 9px; }
+
+  /* Keep grids legible: scroll sideways instead of squeezing columns. */
+  .view { overflow-x: auto; }
+  .month { min-width: 560px; }
+  .week { min-width: 720px; }
+  .resource { min-width: 520px; }
+
+  .modal-backdrop { padding: 10px; align-items: flex-start; }
+  .modal {
+    max-height: calc(100vh - 20px);
+    padding: 16px;
+    border-radius: 10px;
+  }
+  .form-grid .two { grid-template-columns: 1fr; }
+  .popover { max-width: calc(100vw - 20px); }
+}
+
+@media (max-width: 420px) {
+  .view-switch button { padding: 6px 8px; font-size: 12px; }
+  .topbar-right { gap: 6px; }
+  .month { min-width: 520px; }
+  .week { min-width: 660px; }
+}
+
+
 @media (max-width: 1100px) {
   .brand { min-width: auto; }
   .brand-text span { display: none; }
