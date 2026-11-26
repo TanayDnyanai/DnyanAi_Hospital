@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DnyanAI · Clinic Calendar</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231a73e8'/%3E%3Cpath d='M16 8v16M8 16h16' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">✚</div>
+        <div class="brand-text">
+          <strong>DnyanAI</strong>
+          <span>Clinic Calendar</span>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn ghost" id="todayBtn">Today</button>
+        <div class="nav-group">
+          <button class="icon-btn" id="prevBtn" aria-label="Previous">‹</button>
+          <button class="icon-btn" id="nextBtn" aria-label="Next">›</button>
+        </div>
+        <h1 class="range-label" id="rangeLabel">—</h1>
+      </div>
+
+      <div class="topbar-right">
+        <div class="view-switch" id="viewSwitch">
+          <button data-view="month">Month</button>
+          <button data-view="week">Week</button>
+          <button data-view="day">Day</button>
+        </div>
+
+        <button class="btn leave-top-btn" id="topLeaveBtn" title="Manage my leave">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none"
+               stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+               stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="2"/>
+            <path d="M16 3v4M8 3v4M3 11h18"/>
+            <path d="M9 16l2 2 4-4"/>
+          </svg>
+          <span>My leave</span>
+        </button>
+
+        <label class="role-picker">
+          <span>Viewing as</span>
+          <select id="roleSelect">
+            <option value="patient">Patient</option>
+            <option value="receptionist" selected>Receptionist</option>
+            <option value="doctor">Doctor</option>
+            <option value="admin">Admin</option>
+          </select>
+        </label>
+
+        <select id="doctorSelect" class="doctor-select" hidden></select>
+
+        <button class="btn primary" id="newApptBtn">+ New appointment</button>
+      </div>
+    </header>
+
+    <div class="stats-strip" id="statsStrip"></div>
+
+    <main class="layout">
+      <aside class="sidebar" id="sidebar"></aside>
+      <section class="view" id="view">
+        <div class="loading"><div class="spinner"></div></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="popover" id="popover" hidden></div>
+
+  <div class="modal-backdrop" id="modalBackdrop" hidden>
+    <div class="modal" id="modal"></div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>

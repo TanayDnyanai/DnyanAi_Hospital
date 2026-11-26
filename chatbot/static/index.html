@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DnyanAI Hospital • AI Receptionist & Live Schedule</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .chat-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    .chat-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- Top Navigation Bar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div
+          class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-blue-200">
+          ✚
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">DnyanAI Hospital</h1>
+          <p class="text-xs text-slate-500 font-medium">Autonomous LangGraph Receptionist & Live Scheduling Hub</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <span
+          class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+          System Live (30-min Slots)
+        </span>
+        <button onclick="refreshSchedule()"
+          class="px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center">
+          <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+            </path>
+          </svg>
+          Sync Grid
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full flex-1 flex flex-col lg:flex-row gap-4 lg:items-start">
+
+    <!-- ========================================== -->
+    <!-- AI Patient Receptionist Chat               -->
+    <!-- ========================================== -->
+    <section
+      class="w-full lg:w-[70%] flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[78vh] min-h-[620px]">
+
+      <!-- Panel Header & User Context Bar -->
+      <div class="p-4 bg-slate-50 border-b border-slate-200 space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+            <h2 class="text-sm font-bold text-slate-800">Patient Chat Portal</h2>
+          </div>
+          <div class="flex items-center space-x-3">
+            <button onclick="startNewSession()" class="text-xs font-medium text-blue-600 hover:text-blue-700 underline">
+              New chat
+            </button>
+            <button onclick="switchPatient()" class="text-xs font-medium text-slate-600 hover:text-slate-800 underline">
+              Switch patient
+            </button>
+          </div>
+        </div>
+
+        <!-- Hidden session/patient keys (not shown in chat UI) -->
+        <input type="hidden" id="userIdInput" value="">
+        <input type="hidden" id="sessionIdInput" value="">
+
+        <!-- Long-Term Memory Insight Banner -->
+        <div id="memoryBanner"
+          class="p-2.5 bg-blue-50/80 border border-blue-100 rounded-xl text-xs flex items-start justify-between">
+          <div>
+            <span class="font-bold text-blue-900 block mb-0.5">Patient context</span>
+            <span id="memoryDetails" class="text-blue-700 font-medium">Checking patient profile...</span>
+          </div>
+          <button onclick="fetchMemory()"
+            class="text-blue-600 hover:text-blue-800 text-[11px] font-semibold underline shrink-0 ml-2">
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat Messages Scroll Area -->
+      <div id="chatMessages" class="chat-scroll flex-1 p-4 space-y-4 overflow-y-auto bg-slate-50/50">
+
+        <!-- Welcome Message from Agent -->
+        <div class="flex items-start space-x-3">
+          <div
+            class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+            AI
+          </div>
+          <div
+            class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-3.5 shadow-sm max-w-[85%] text-sm text-slate-800 leading-relaxed">
+            <p class="font-semibold text-blue-900 text-xs mb-1">DnyanAI Front Desk Receptionist</p>
+            Hello! Welcome to DnyanAI Hospital. I can help evaluate symptoms, guide you to the right specialist,
+            or book an appointment. How can I assist you today?
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Action Prompt Pills -->
+      <div
+        class="px-4 py-2 bg-white border-t border-slate-100 flex items-center space-x-1.5 overflow-x-auto text-xs whitespace-nowrap">
+        <span class="text-slate-400 font-semibold mr-1 text-[11px]">Quick:</span>
+        <button onclick="sendQuickPrompt('I have a severe headache and dizziness since yesterday')"
+          class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+          🤕 Severe Headache
+        </button>
+        <button onclick="sendQuickPrompt('I have severe chest pain and difficulty breathing')"
+          class="px-2.5 py-1 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition">
+          🚨 Chest Pain (Emergency)
+        </button>
+        <button
+          onclick="sendQuickPrompt('Please book an appointment for Raj Kumar phone 9876543210 with Dr. Rajesh Sharma today at 02:00 PM')"
+          class="px-2.5 py-1 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 transition">
+          📅 Book 2:00 PM
+        </button>
+        <button onclick="sendQuickPrompt('What are the hospital opening hours and address?')"
+          class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+          🕒 Hospital Hours
+        </button>
+      </div>
+
+      <!-- Chat Input Field -->
+      <div class="p-3 bg-white border-t border-slate-200">
+        <form id="chatForm" onsubmit="handleSendMessage(event)" class="flex items-center space-x-2">
+          <input type="text" id="userInput" placeholder="Ask a symptom, request booking, or hospital info..."
+            class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50 focus:bg-white transition">
+          <select id="voiceLang" class="px-2 py-2.5 rounded-xl border border-slate-300 text-xs bg-slate-50">
+            <option value="en-IN">EN</option>
+            <option value="hi-IN">HI</option>
+            <option value="mr-IN">MR</option>
+          </select>
+          <button type="button" id="micBtn" onclick="toggleVoice()"
+            class="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition-colors">
+            🎙️
+          </button>
+          <button type="submit" id="sendBtn"
+            class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center min-w-[70px]">
+            <span>Send</span>
+          </button>
+        </form>
+      </div>
+
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- Live Doctor Schedule & Admin               -->
+    <!-- ========================================== -->
+    <section
+      class="w-full lg:w-[30%] lg:min-w-[320px] flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[420px] lg:h-[78vh] lg:min-h-[620px]">
+
+      <!-- Panel Header & Date / Doctor Selectors -->
+      <div class="p-3 bg-slate-50 border-b border-slate-200 space-y-2.5">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex items-center space-x-2 min-w-0">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
+            <h2 class="text-sm font-bold text-slate-800 leading-tight">Live Doctor Schedule</h2>
+          </div>
+          <span class="text-[11px] text-slate-500 font-medium text-right leading-tight">10-min grace recycle</span>
+        </div>
+
+        <div class="grid grid-cols-1 gap-2 text-xs">
+          <!-- Doctor Selector Dropdown -->
+          <div>
+            <label class="block font-semibold text-slate-600 mb-0.5">Select Doctor:</label>
+            <select id="doctorSelect" onchange="renderSelectedDoctorSchedule()"
+              class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+              <option value="">Loading doctors...</option>
+            </select>
+          </div>
+
+          <!-- Date Picker -->
+          <div>
+            <label class="block font-semibold text-slate-600 mb-0.5">Schedule Date:</label>
+            <input type="date" id="scheduleDateInput" onchange="refreshSchedule()"
+              class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+          </div>
+        </div>
+
+        <!-- Legend & Stats -->
+        <div class="pt-1.5 text-[11px] text-slate-600 font-medium border-t border-slate-200 space-y-1.5">
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span class="flex items-center"><span class="w-2 h-2 rounded-full bg-emerald-500 mr-1"></span>Available</span>
+            <span class="flex items-center"><span class="w-2 h-2 rounded-full bg-blue-600 mr-1"></span>Confirmed</span>
+            <span class="flex items-center"><span class="w-2 h-2 rounded-full bg-rose-500 mr-1"></span>Emergency</span>
+          </div>
+          <span id="slotCountSummary" class="block text-slate-500 font-semibold leading-tight">14 Slots Grid</span>
+        </div>
+      </div>
+
+      <!-- Doctor Slots Grid Container -->
+      <div id="slotsContainer" class="chat-scroll flex-1 p-3 overflow-y-auto space-y-2 bg-slate-50/30">
+        <!-- Rendered dynamically via JavaScript -->
+        <div class="flex items-center justify-center h-48 text-slate-400 text-sm">
+          Loading live schedule...
+        </div>
+      </div>
+
+      <!-- Staff Action Info Footer -->
+      <div class="p-2.5 bg-slate-50 border-t border-slate-200 text-[11px] text-slate-500 space-y-1.5">
+        <span class="flex items-start">
+          <svg class="w-3.5 h-3.5 text-amber-500 mr-1.5 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+              clip-rule="evenodd"></path>
+          </svg>
+          <span>Click <strong>Mark No-Show</strong> to free a slot instantly.</span>
+        </span>
+        <button onclick="refreshSchedule()" class="text-blue-600 font-bold hover:underline">
+          Refresh Live
+        </button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Notification Toast Modal -->
+  <div id="toast"
+    class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 text-xs font-semibold flex items-center space-x-2">
+    <span id="toastIcon">ℹ️</span>
+    <span id="toastMsg">Notification message</span>
+  </div>
+
+  <!-- Client-Side JavaScript Logic -->
+  <script>
+    let globalScheduleData = null;
+    let currentUserId = "";
+    let currentSessionId = "";
+    let currentChannel = "text";
+    let isSpeaking = false;
+    const USER_ID_KEY = "dnyanai_patient_user_id";
+
+    function generateId(prefix) {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return `${prefix}_${crypto.randomUUID()}`;
+      }
+      return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    }
+
+    function ensureUserId() {
+      let id = localStorage.getItem(USER_ID_KEY);
+      if (!id) {
+        id = generateId("patient");
+        localStorage.setItem(USER_ID_KEY, id);
+      }
+      currentUserId = id;
+      const input = document.getElementById("userIdInput");
+      if (input) input.value = id;
+      return id;
+    }
+
+    function newSessionId() {
+      currentSessionId = generateId("session");
+      const input = document.getElementById("sessionIdInput");
+      if (input) input.value = currentSessionId;
+      return currentSessionId;
+    }
+
+    function resetChatToWelcome() {
+      const container = document.getElementById("chatMessages");
+      container.innerHTML = `
+        <div class="flex items-start space-x-3">
+          <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">AI</div>
+          <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-3.5 shadow-sm max-w-[85%] text-sm text-slate-800 leading-relaxed">
+            <p class="font-semibold text-blue-900 text-xs mb-1">DnyanAI Front Desk Receptionist</p>
+            Hello! Welcome to DnyanAI Hospital. I can help evaluate symptoms, guide you to the right specialist, or book an appointment. How can I assist you today?
+          </div>
+        </div>
+      `;
+    }
+
+    // Set today's date in date picker on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const todayStr = new Date().toISOString().split('T')[0];
+      document.getElementById('scheduleDateInput').value = todayStr;
+      ensureUserId();
+      newSessionId();
+      refreshSchedule();
+      fetchMemory();
+    });
+
+    // ==========================================
+    // 1. Live Schedule & No-Show Management
+    // ==========================================
+    async function refreshSchedule() {
+      const dateVal = document.getElementById('scheduleDateInput').value;
+      try {
+        const res = await fetch(`/api/schedule?date=${encodeURIComponent(dateVal)}`);
+        if (!res.ok) throw new Error("Failed to load schedule");
+        globalScheduleData = await res.json();
+
+        const select = document.getElementById('doctorSelect');
+        const prev = select.value;
+        if (globalScheduleData.doctors && globalScheduleData.doctors.length) {
+          select.innerHTML = globalScheduleData.doctors.map(doc =>
+            `<option value="${escapeHtml(doc.doctor_name)}">${escapeHtml(doc.doctor_name)} (${escapeHtml(doc.specialty)})</option>`
+          ).join('');
+          if (prev && globalScheduleData.doctors.some(d => d.doctor_name === prev)) {
+            select.value = prev;
+          }
+        }
+
+        renderSelectedDoctorSchedule();
+      } catch (err) {
+        showToast("⚠️ Could not load schedule: " + err.message, "error");
+      }
+    }
+
+    function renderSelectedDoctorSchedule() {
+      if (!globalScheduleData) return;
+      const selectedDocName = document.getElementById('doctorSelect').value;
+      const docData = globalScheduleData.doctors.find(d => d.doctor_name === selectedDocName);
+      const container = document.getElementById('slotsContainer');
+
+      if (!docData) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-400">Doctor not found for this date.</div>`;
+        return;
+      }
+
+      document.getElementById('slotCountSummary').innerText = `${docData.specialty} (${docData.available_days})`;
+
+      let html = '';
+      let availableCount = 0;
+
+      docData.slots.forEach(slot => {
+        const isConfirmed = slot.status === 'Confirmed';
+        const isEmergency = slot.is_emergency;
+        const isExpired = slot.is_expired;
+
+        if (!isConfirmed && !isExpired) availableCount++;
+
+        let badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200";
+        let statusText = "Available";
+        let cardBorder = "border-slate-200 hover:border-emerald-300";
+
+        if (isConfirmed) {
+          if (isEmergency) {
+            badgeClass = "bg-rose-50 text-rose-700 border-rose-200";
+            statusText = "EMERGENCY BOOKED";
+            cardBorder = "border-rose-200 bg-rose-50/20";
+          } else {
+            badgeClass = "bg-blue-50 text-blue-700 border-blue-200";
+            statusText = "Confirmed";
+            cardBorder = "border-blue-200 bg-blue-50/20";
+          }
+        } else if (isExpired) {
+          badgeClass = "bg-slate-100 text-slate-500 border-slate-200";
+          statusText = "Past Slot";
+          cardBorder = "border-slate-200 opacity-60";
+        }
+
+        html += `
+          <div class="bg-white p-2.5 rounded-xl border ${cardBorder} shadow-sm transition-all flex flex-col gap-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-mono text-[11px] font-bold text-slate-800 bg-slate-100 px-2 py-1 rounded-md shrink-0">
+                ${slot.time_slot}
+              </span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${badgeClass} text-right leading-tight">
+                ${statusText}
+              </span>
+            </div>
+            <div class="min-w-0">
+              ${slot.last_event === 'No-Show' ? '<p class="text-[10px] text-amber-600 font-semibold mb-0.5">Recycled after No-Show</p>' : ''}
+              ${isConfirmed ? `
+                <p class="text-xs text-slate-700 font-semibold break-words">
+                  ${escapeHtml(slot.patient_name)}
+                  <span class="text-slate-400 font-normal font-mono block sm:inline">(${escapeHtml(slot.patient_phone)})</span>
+                </p>
+              ` : `
+                <p class="text-[11px] text-slate-400">${isExpired ? 'Consultation window closed' : 'Ready for booking or walk-in'}</p>
+              `}
+            </div>
+            ${isConfirmed ? `
+              <button onclick="handleNoShow(${slot.appointment_id}, '${slot.time_slot}')" 
+                class="w-full px-2.5 py-1.5 bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-700 border border-rose-200 rounded-lg text-[11px] font-bold transition">
+                Mark No-Show
+              </button>
+            ` : ''}
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    async function handleNoShow(appointmentId, timeSlot) {
+      if (!confirm(`Mark Appointment #${appointmentId} at ${timeSlot} as No-Show?\nThis will immediately free the slot for other patients.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/appointments/${appointmentId}/no-show`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: "Patient did not arrive after 10-min wait" })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Failed to mark no-show");
+
+        showToast(`✅ Slot ${timeSlot} is now freed & available!`, "success");
+        await refreshSchedule();
+      } catch (err) {
+        showToast("⚠️ " + err.message, "error");
+      }
+    }
+
+
+    // ==========================================
+    // 2. AI Chat & Long-Term Memory
+    // ==========================================
+    async function handleSendMessage(e) {
+      e.preventDefault();
+      const sendBtn = document.getElementById('sendBtn');
+      if (sendBtn.disabled) return;
+
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      // A voice transcript is a one-shot channel; typed messages never inherit it.
+      const channel = currentChannel;
+      currentChannel = "text";
+
+      const sessionId = currentSessionId || document.getElementById('sessionIdInput').value.trim() || newSessionId();
+      const userId = currentUserId || document.getElementById('userIdInput').value.trim() || ensureUserId();
+
+      appendMessage("You", text, true);
+      input.value = "";
+
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = `<span class="animate-spin inline-block mr-1">⌛</span>`;
+
+      try {
+        const res = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: sessionId,
+            user_id: userId,
+            message: text,
+            channel: channel
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Agent failed to respond");
+
+        appendMessage("DnyanAI Receptionist", data.reply, false);
+        // Text chat stays silent; only spoken turns are read aloud.
+        if (channel === "voice") speakReply(data.reply);
+
+        refreshSchedule();
+        fetchMemory();
+      } catch (err) {
+        appendMessage("System Alert", "⚠️ " + err.message, false);
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = `<span>Send</span>`;
+      }
+    }
+
+    function sendQuickPrompt(promptText) {
+      document.getElementById('userInput').value = promptText;
+      document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+    }
+
+    function startNewSession() {
+      newSessionId();
+      resetChatToWelcome();
+      showToast("Started a new chat. Patient context is preserved.", "info");
+    }
+
+    function switchPatient() {
+      const nextId = generateId("patient");
+      localStorage.setItem(USER_ID_KEY, nextId);
+      currentUserId = nextId;
+      const userInput = document.getElementById("userIdInput");
+      if (userInput) userInput.value = nextId;
+      newSessionId();
+      resetChatToWelcome();
+      fetchMemory();
+      showToast("Switched to a new patient profile.", "info");
+    }
+
+    async function fetchMemory() {
+      const userId = currentUserId || document.getElementById('userIdInput').value.trim();
+      if (!userId) return;
+
+      try {
+        const res = await fetch(`/api/patient-memory/${encodeURIComponent(userId)}`);
+        const data = await res.json();
+        const mem = data.memory;
+
+        if (!mem || Object.keys(mem).length === 0) {
+          document.getElementById('memoryDetails').innerText = "New patient. I’ll remember details you share (name, phone, symptoms).";
+          return;
+        }
+
+        const name = mem.patient_name || "";
+        const phone = mem.patient_phone || "";
+        const history = mem.medical_history || {};
+        const symptoms = Array.isArray(history.reported_symptoms) ? history.reported_symptoms : [];
+        const summary = mem.conversation_summary || "";
+
+        let details = [];
+        if (name) details.push(`Name: ${name}`);
+        if (phone) details.push(`Phone: ${phone}`);
+        if (symptoms.length > 0) details.push(`Recent symptoms: ${symptoms.slice(-2).join(', ')}`);
+        if (summary) details.push(summary);
+
+        document.getElementById('memoryDetails').innerText = details.join(' • ') || "Returning patient profile loaded.";
+      } catch (e) {
+        document.getElementById('memoryDetails').innerText = "Unable to load patient context right now.";
+      }
+    }
+
+    let recognition = null;
+    let isListening = false;
+    function toggleVoice() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) { showToast("Voice not supported in this browser", "error"); return; }
+      if (isListening) { recognition && recognition.stop(); return; }
+      if (isSpeaking) { showToast("Please wait for the receptionist to finish speaking.", "info"); return; }
+      recognition = new SpeechRecognition();
+      recognition.lang = document.getElementById('voiceLang').value;
+      recognition.interimResults = false;
+      recognition.onstart = () => { isListening = true; document.getElementById('micBtn').textContent = "⏹"; };
+      recognition.onresult = (e) => {
+        // Ignore late/duplicate results, especially while TTS is playing.
+        if (isSpeaking || !isListening) return;
+        const text = e.results[0][0].transcript;
+        currentChannel = "voice";
+        document.getElementById('userInput').value = text;
+        document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+      };
+      recognition.onend = () => { isListening = false; document.getElementById('micBtn').textContent = "🎙️"; };
+      recognition.onerror = (e) => { showToast("Voice error: " + e.error, "error"); isListening = false; document.getElementById('micBtn').textContent = "🎙️"; };
+      recognition.start();
+    }
+    function speakReply(text) {
+      if (!window.speechSynthesis) return;
+      // Close the mic first so our own answer cannot be transcribed back as
+      // a new patient message (the echo loop seen in earlier testing).
+      if (recognition && isListening) recognition.stop();
+      isSpeaking = true;
+      let t = String(text).replace(/<[^>]*>/g, '').replace(/\*\*/g, '').replace(/\*/g, '').replace(/#/g, '');
+      t = t.replace(/\b(\d{1,2}):(\d{2})\s*(AM|PM)\b/gi, (m,h,mm,ap) => `${h} ${mm} ${ap}`);
+      t = t.replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, (m,y,mo,d) => `${d} ${mo} ${y}`);
+      const u = new SpeechSynthesisUtterance(t);
+      u.lang = document.getElementById('voiceLang').value;
+      const voices = window.speechSynthesis.getVoices();
+      const preferred = voices.find(v => v.lang === u.lang && /natural|neural|google/i.test(v.name)) || voices.find(v => v.lang === u.lang);
+      if (preferred) u.voice = preferred;
+      u.rate = 1.3;
+      u.onend = () => { isSpeaking = false; };
+      u.onerror = () => { isSpeaking = false; };
+      window.speechSynthesis.speak(u);
+    }
+
+    function appendMessage(sender, text, isUser) {
+      const container = document.getElementById('chatMessages');
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const bubble = document.createElement('div');
+      bubble.className = `flex items-start space-x-2.5 ${isUser ? 'justify-end' : ''}`;
+
+      if (isUser) {
+        bubble.innerHTML = `
+          <div class="bg-blue-600 text-white rounded-2xl rounded-tr-none p-3.5 shadow-sm max-w-[85%] text-sm leading-relaxed">
+            <p class="text-right text-[10px] text-blue-200 mb-0.5">${timeStr}</p>
+            <div>${escapeHtml(text)}</div>
+          </div>
+        `;
+      } else {
+        bubble.innerHTML = `
+          <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+            AI
+          </div>
+          <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-3.5 shadow-sm max-w-[85%] text-sm text-slate-800 leading-relaxed">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-bold text-blue-900 text-xs">${sender}</span>
+              <span class="text-[10px] text-slate-400">${timeStr}</span>
+            </div>
+            <div class="whitespace-pre-wrap">${formatBotResponse(text)}</div>
+          </div>
+        `;
+      }
+
+      container.appendChild(bubble);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function formatBotResponse(text) {
+      // Basic markdown styling for bullets, appointment IDs, and bolding
+      return escapeHtml(text)
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/#(Appointment ID: #\d+)/g, '<span class="font-mono bg-blue-50 px-1 py-0.5 rounded text-blue-700 font-bold">$1</span>');
+    }
+
+    function escapeHtml(string) {
+      return String(string)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function showToast(msg, type = "info") {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMsg.innerText = msg;
+      toastIcon.innerText = type === "success" ? "✅" : (type === "error" ? "⚠️" : "ℹ️");
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3500);
+    }
+  </script>
+</body>
+
+</html>

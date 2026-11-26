@@ -1,0 +1,31 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Databases (legacy/test only; never commit patient data)
+*.db
+*.sqlite
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Frontend / build output
+node_modules/
+dist/
+build/
+
+# Logs and local tooling
+*.log
+.neon/
+.DS_Store
+.idea/
+.vscode/
