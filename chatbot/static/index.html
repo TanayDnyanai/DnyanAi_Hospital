@@ -40,10 +40,31 @@
 
     .composer-input::placeholder { color: #94a3b8; }
 
+    /* Phone: the bot owns the first screen. The live schedule sits below the
+       fold and the page scrolls down to it. */
     @media (max-width: 640px) {
-      #userInput, #voiceLang, #doctorSelect, #scheduleDateInput {
-        font-size: 16px;
+      main { padding: 0 !important; gap: 10px !important; }
+      .chat-panel {
+        height: 100vh !important;
+        height: 100dvh !important;
+        min-height: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
       }
+      #chatMessages { padding: 16px 14px !important; }
+      #memoryBanner { padding: 6px 8px !important; margin: 0 !important; }
+      .quick-prompts { padding: 6px 12px !important; }
+      .composer { padding: 6px !important; border-radius: 22px !important; }
+      #userInput {
+        font-size: 15px !important;
+        line-height: 20px !important;
+        padding: 6px 8px !important;
+      }
+      #voiceLang { font-size: 12px !important; padding: 4px 6px !important; }
+      #micBtn, #sendBtn { width: 32px !important; height: 32px !important; }
+      .send-icon { font-size: 18px !important; }
+      #doctorSelect, #scheduleDateInput { font-size: 16px; }
     }
   </style>
 </head>
@@ -91,7 +112,7 @@
     <!-- AI Patient Receptionist Chat               -->
     <!-- ========================================== -->
     <section
-      class="w-full flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[68vh] min-h-[440px] sm:h-[72vh] sm:min-h-[560px]">
+      class="chat-panel w-full flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[68vh] min-h-[440px] sm:h-[72vh] sm:min-h-[560px]">
 
       <!-- Panel Header & User Context Bar -->
       <div class="p-3 sm:p-4 bg-slate-50 border-b border-slate-200 space-y-3">
@@ -149,7 +170,7 @@
 
       <!-- Quick Action Prompt Pills -->
       <div
-        class="px-4 sm:px-6 py-2.5 bg-white border-t border-slate-100 flex items-center gap-2 overflow-x-auto text-xs whitespace-nowrap">
+        class="quick-prompts px-4 sm:px-6 py-2.5 bg-white border-t border-slate-100 flex items-center gap-2 overflow-x-auto text-xs whitespace-nowrap">
         <span class="text-slate-400 font-semibold mr-1 text-[11px]">Quick:</span>
         <button onclick="sendQuickPrompt('I have a severe headache and dizziness since yesterday')"
           class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
