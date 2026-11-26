@@ -69,6 +69,9 @@ def _pool() -> ConnectionPool:
             max_size=8,
             timeout=10,
             open=True,
+            # Neon may close idle server connections; validate on checkout
+            # so a stale one is discarded instead of failing a request.
+            check=ConnectionPool.check_connection,
         )
     return _POOL
 
@@ -84,6 +87,9 @@ def _write_pool() -> ConnectionPool:
             max_size=4,
             timeout=10,
             open=True,
+            # Neon may close idle server connections; validate on checkout
+            # so a stale one is discarded instead of failing a request.
+            check=ConnectionPool.check_connection,
         )
     return _WRITE_POOL
 
