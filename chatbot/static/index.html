@@ -28,6 +28,18 @@
       background: #94a3b8;
     }
 
+    .send-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 21px;
+      font-weight: 700;
+      line-height: 1;
+      margin-top: -2px;
+    }
+
+    .composer-input::placeholder { color: #94a3b8; }
+
     @media (max-width: 640px) {
       #userInput, #voiceLang, #doctorSelect, #scheduleDateInput {
         font-size: 16px;
@@ -73,13 +85,13 @@
   </header>
 
   <!-- Main Content -->
-  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 w-full flex-1 flex flex-col lg:flex-row gap-3 sm:gap-4 lg:items-start">
+  <main class="max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-6 w-full flex-1 flex flex-col gap-4 sm:gap-5">
 
     <!-- ========================================== -->
     <!-- AI Patient Receptionist Chat               -->
     <!-- ========================================== -->
     <section
-      class="w-full lg:w-[70%] flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[70vh] min-h-[420px] sm:h-[78vh] sm:min-h-[560px] lg:h-[78vh] lg:min-h-[620px]">
+      class="w-full flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[68vh] min-h-[440px] sm:h-[72vh] sm:min-h-[560px]">
 
       <!-- Panel Header & User Context Bar -->
       <div class="p-3 sm:p-4 bg-slate-50 border-b border-slate-200 space-y-3">
@@ -117,7 +129,7 @@
       </div>
 
       <!-- Chat Messages Scroll Area -->
-      <div id="chatMessages" class="chat-scroll flex-1 p-4 space-y-4 overflow-y-auto bg-slate-50/50">
+      <div id="chatMessages" class="chat-scroll flex-1 px-4 sm:px-6 py-5 space-y-5 overflow-y-auto bg-slate-50/50">
 
         <!-- Welcome Message from Agent -->
         <div class="flex items-start space-x-3">
@@ -126,7 +138,7 @@
             AI
           </div>
           <div
-            class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-3.5 shadow-sm max-w-[85%] text-sm text-slate-800 leading-relaxed">
+            class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 shadow-sm max-w-[90%] text-[15px] text-slate-800 leading-relaxed">
             <p class="font-semibold text-blue-900 text-xs mb-1">DnyanAI Front Desk Receptionist</p>
             Hello! Welcome to DnyanAI Hospital. I can help evaluate symptoms, guide you to the right specialist,
             or book an appointment. How can I assist you today?
@@ -137,46 +149,54 @@
 
       <!-- Quick Action Prompt Pills -->
       <div
-        class="px-4 py-2 bg-white border-t border-slate-100 flex items-center space-x-1.5 overflow-x-auto text-xs whitespace-nowrap">
+        class="px-4 sm:px-6 py-2.5 bg-white border-t border-slate-100 flex items-center gap-2 overflow-x-auto text-xs whitespace-nowrap">
         <span class="text-slate-400 font-semibold mr-1 text-[11px]">Quick:</span>
         <button onclick="sendQuickPrompt('I have a severe headache and dizziness since yesterday')"
-          class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+          class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
           🤕 Severe Headache
         </button>
         <button onclick="sendQuickPrompt('I have severe chest pain and difficulty breathing')"
-          class="px-2.5 py-1 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition">
+          class="px-3 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition">
           🚨 Chest Pain (Emergency)
         </button>
         <button
           onclick="sendQuickPrompt('Please book an appointment for Raj Kumar phone 9876543210 with Dr. Rajesh Sharma today at 02:00 PM')"
-          class="px-2.5 py-1 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 transition">
+          class="px-3 py-1.5 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 transition">
           📅 Book 2:00 PM
         </button>
         <button onclick="sendQuickPrompt('What are the hospital opening hours and address?')"
-          class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+          class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
           🕒 Hospital Hours
         </button>
       </div>
 
-      <!-- Chat Input Field -->
-      <div class="p-2.5 sm:p-3 bg-white border-t border-slate-200">
-        <form id="chatForm" onsubmit="handleSendMessage(event)" class="flex flex-wrap items-center gap-2">
-          <input type="text" id="userInput" placeholder="Ask a symptom, request booking, or hospital info..."
-            class="flex-1 min-w-[140px] px-3 sm:px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50 focus:bg-white transition">
-          <select id="voiceLang" class="px-2 py-2.5 rounded-xl border border-slate-300 text-xs bg-slate-50">
-            <option value="en-IN">EN</option>
-            <option value="hi-IN">HI</option>
-            <option value="mr-IN">MR</option>
-          </select>
-          <button type="button" id="micBtn" onclick="toggleVoice()"
-            class="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition-colors">
-            🎙️
-          </button>
-          <button type="submit" id="sendBtn"
-            class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center min-w-[70px]">
-            <span>Send</span>
-          </button>
+      <!-- Chat Composer (ChatGPT-style rounded box) -->
+      <div class="px-3 sm:px-5 py-3 bg-white border-t border-slate-100">
+        <form id="chatForm" onsubmit="handleSendMessage(event)"
+          class="flex items-end gap-1.5 sm:gap-2 rounded-[26px] border border-slate-300 bg-white p-2 shadow-sm transition focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-500/10">
+          <textarea id="userInput" rows="1" placeholder="Message DnyanAI..."
+            aria-label="Message DnyanAI"
+            class="composer-input flex-1 min-w-0 resize-none bg-transparent px-3 py-2.5 text-[15px] leading-6 text-slate-800 outline-none max-h-[160px] overflow-y-auto"></textarea>
+          <div class="flex items-center gap-1 sm:gap-1.5 pb-0.5 shrink-0">
+            <select id="voiceLang" aria-label="Voice language"
+              class="px-1.5 sm:px-2 py-1.5 rounded-full border border-slate-200 bg-slate-50 text-[11px] font-semibold text-slate-600 outline-none focus:border-blue-400">
+              <option value="en-IN">EN</option>
+              <option value="hi-IN">HI</option>
+              <option value="mr-IN">MR</option>
+            </select>
+            <button type="button" id="micBtn" onclick="toggleVoice()" aria-label="Speak your message"
+              class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-base transition-colors flex items-center justify-center">
+              🎙️
+            </button>
+            <button type="submit" id="sendBtn" aria-label="Send message"
+              class="w-9 h-9 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition-colors flex items-center justify-center disabled:opacity-50">
+              <span class="send-icon">↑</span>
+            </button>
+          </div>
         </form>
+        <p class="hidden sm:block text-center text-[11px] text-slate-400 mt-2">
+          Enter to send · Shift + Enter for a new line
+        </p>
       </div>
 
     </section>
@@ -186,7 +206,7 @@
     <!-- Live Doctor Schedule & Admin               -->
     <!-- ========================================== -->
     <section
-      class="w-full lg:w-[30%] lg:min-w-[320px] flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[380px] sm:h-[420px] lg:h-[78vh] lg:min-h-[620px]">
+      class="w-full flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
 
       <!-- Panel Header & Date / Doctor Selectors -->
       <div class="p-3 bg-slate-50 border-b border-slate-200 space-y-2.5">
@@ -198,7 +218,7 @@
           <span class="text-[11px] text-slate-500 font-medium text-right leading-tight">10-min grace recycle</span>
         </div>
 
-        <div class="grid grid-cols-1 gap-2 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           <!-- Doctor Selector Dropdown -->
           <div>
             <label class="block font-semibold text-slate-600 mb-0.5">Select Doctor:</label>
@@ -228,7 +248,7 @@
       </div>
 
       <!-- Doctor Slots Grid Container -->
-      <div id="slotsContainer" class="chat-scroll flex-1 p-3 overflow-y-auto space-y-2 bg-slate-50/30">
+      <div id="slotsContainer" class="chat-scroll grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 p-3 sm:p-4 max-h-[460px] overflow-y-auto bg-slate-50/30 content-start">
         <!-- Rendered dynamically via JavaScript -->
         <div class="flex items-center justify-center h-48 text-slate-400 text-sm">
           Loading live schedule...
@@ -270,6 +290,7 @@
     let currentSessionId = "";
     let currentChannel = "text";
     let isSpeaking = false;
+    const SEND_ICON = '<span class="send-icon">↑</span>';
     const USER_ID_KEY = "dnyanai_patient_user_id";
 
     function generateId(prefix) {
@@ -303,12 +324,35 @@
       container.innerHTML = `
         <div class="flex items-start space-x-3">
           <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">AI</div>
-          <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-3.5 shadow-sm max-w-[85%] text-sm text-slate-800 leading-relaxed">
+          <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 shadow-sm max-w-[90%] text-[15px] text-slate-800 leading-relaxed">
             <p class="font-semibold text-blue-900 text-xs mb-1">DnyanAI Front Desk Receptionist</p>
             Hello! Welcome to DnyanAI Hospital. I can help evaluate symptoms, guide you to the right specialist, or book an appointment. How can I assist you today?
           </div>
         </div>
       `;
+    }
+
+    // ChatGPT-style composer: grows with the text; Enter sends, Shift+Enter wraps.
+    function autoSizeInput() {
+      const input = document.getElementById('userInput');
+      if (!input) return;
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 160) + 'px';
+    }
+
+    function bindComposer() {
+      const input = document.getElementById('userInput');
+      if (!input) return;
+      input.addEventListener('input', autoSizeInput);
+      input.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+          event.preventDefault();
+          const form = document.getElementById('chatForm');
+          if (typeof form.requestSubmit === 'function') form.requestSubmit();
+          else form.dispatchEvent(new Event('submit', { cancelable: true }));
+        }
+      });
+      autoSizeInput();
     }
 
     // Set today's date in date picker on load
@@ -317,6 +361,7 @@
       document.getElementById('scheduleDateInput').value = todayStr;
       ensureUserId();
       newSessionId();
+      bindComposer();
       refreshSchedule();
       fetchMemory();
     });
@@ -468,9 +513,10 @@
 
       appendMessage("You", text, true);
       input.value = "";
+      autoSizeInput();
 
       sendBtn.disabled = true;
-      sendBtn.innerHTML = `<span class="animate-spin inline-block mr-1">⌛</span>`;
+      sendBtn.innerHTML = '<span class="animate-spin inline-block">⌛</span>';
 
       try {
         const res = await fetch(API_BASE + '/chat', {
@@ -497,12 +543,13 @@
         appendMessage("System Alert", "⚠️ " + err.message, false);
       } finally {
         sendBtn.disabled = false;
-        sendBtn.innerHTML = `<span>Send</span>`;
+        sendBtn.innerHTML = SEND_ICON;
       }
     }
 
     function sendQuickPrompt(promptText) {
       document.getElementById('userInput').value = promptText;
+      autoSizeInput();
       document.getElementById('chatForm').dispatchEvent(new Event('submit'));
     }
 
@@ -573,6 +620,7 @@
         const text = e.results[0][0].transcript;
         currentChannel = "voice";
         document.getElementById('userInput').value = text;
+        autoSizeInput();
         document.getElementById('chatForm').dispatchEvent(new Event('submit'));
       };
       recognition.onend = () => { isListening = false; document.getElementById('micBtn').textContent = "🎙️"; };
@@ -608,7 +656,7 @@
 
       if (isUser) {
         bubble.innerHTML = `
-          <div class="bg-blue-600 text-white rounded-2xl rounded-tr-none p-3.5 shadow-sm max-w-[85%] text-sm leading-relaxed">
+          <div class="bg-blue-600 text-white rounded-2xl rounded-tr-none p-4 shadow-sm max-w-[90%] text-[15px] leading-relaxed">
             <p class="text-right text-[10px] text-blue-200 mb-0.5">${timeStr}</p>
             <div>${escapeHtml(text)}</div>
           </div>
@@ -618,7 +666,7 @@
           <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
             AI
           </div>
-          <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-3.5 shadow-sm max-w-[85%] text-sm text-slate-800 leading-relaxed">
+          <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 shadow-sm max-w-[90%] text-[15px] text-slate-800 leading-relaxed">
             <div class="flex items-center justify-between mb-1">
               <span class="font-bold text-blue-900 text-xs">${sender}</span>
               <span class="text-[10px] text-slate-400">${timeStr}</span>
