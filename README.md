@@ -1,3 +1,13 @@
+---
+title: DnyanAI Hospital Receptionist
+emoji: "🩺"
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Medical Calendar + Receptionist
 
 One repo containing both services. They share a single Neon Postgres database and
