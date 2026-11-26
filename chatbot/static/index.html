@@ -263,6 +263,8 @@
 
   <!-- Client-Side JavaScript Logic -->
   <script>
+    // The combined portal mounts the chatbot under /chat.
+    const API_BASE = location.pathname.startsWith("/chat/") ? "/chat" : "";
     let globalScheduleData = null;
     let currentUserId = "";
     let currentSessionId = "";
@@ -325,7 +327,7 @@
     async function refreshSchedule() {
       const dateVal = document.getElementById('scheduleDateInput').value;
       try {
-        const res = await fetch(`/api/schedule?date=${encodeURIComponent(dateVal)}`);
+        const res = await fetch(`${API_BASE}/api/schedule?date=${encodeURIComponent(dateVal)}`);
         if (!res.ok) throw new Error("Failed to load schedule");
         globalScheduleData = await res.json();
 
@@ -429,7 +431,7 @@
       }
 
       try {
-        const res = await fetch(`/appointments/${appointmentId}/no-show`, {
+        const res = await fetch(`${API_BASE}/appointments/${appointmentId}/no-show`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ reason: "Patient did not arrive after 10-min wait" })
@@ -471,7 +473,7 @@
       sendBtn.innerHTML = `<span class="animate-spin inline-block mr-1">⌛</span>`;
 
       try {
-        const res = await fetch('/chat', {
+        const res = await fetch(API_BASE + '/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -527,7 +529,7 @@
       if (!userId) return;
 
       try {
-        const res = await fetch(`/api/patient-memory/${encodeURIComponent(userId)}`);
+        const res = await fetch(`${API_BASE}/api/patient-memory/${encodeURIComponent(userId)}`);
         const data = await res.json();
         const mem = data.memory;
 

@@ -1,4 +1,6 @@
 // Thin fetch wrapper that injects the demo role headers.
+// When the calendar is mounted under the portal, API calls need the prefix.
+const API_ROOT = location.pathname.startsWith("/calendar/") ? "/calendar" : "";
 
 let auth = { role: "receptionist", doctorId: null };
 
@@ -26,7 +28,7 @@ async function request(path, { method = "GET", body } = {}) {
   if (auth.doctorId) headers["X-Doctor-Id"] = auth.doctorId;
   if (body !== undefined) headers["Content-Type"] = "application/json";
 
-  const response = await fetch(path, {
+  const response = await fetch(`${API_ROOT}${path}`, {
     method,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,

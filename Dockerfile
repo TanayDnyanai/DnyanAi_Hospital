@@ -9,12 +9,13 @@ WORKDIR /app
 COPY chatbot/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# The chatbot imports the calendar's canonical schema at runtime.
+# The chatbot imports the calendar's canonical schema at runtime, and the
+# portal mounts both apps behind one URL with a toggle.
 COPY calendar/ ./calendar/
 COPY chatbot/ ./chatbot/
+COPY portal/ ./portal/
 
-WORKDIR /app/chatbot
-
-# Hugging Face Spaces sets PORT (usually 7860); local Docker defaults to 8001.
 EXPOSE 7860
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port \"${PORT:-7860}\""]
+
+# Hugging Face Spaces sets PORT (usually 7860); local Docker defaults to 7860.
+CMD ["sh", "-c", "uvicorn portal.app:app --host 0.0.0.0 --port \"${PORT:-7860}\""]

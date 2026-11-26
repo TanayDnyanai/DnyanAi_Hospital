@@ -1,7 +1,8 @@
 # Deploy the chatbot to a Hugging Face Space (text chat first)
 
-This deploys the **chatbot** (`chatbot/`) as a private Docker Space. The calendar
-keeps running against the same Neon database; nothing needs to be moved.
+This deploys **both apps** as a private Docker Space. The root `portal/app.py`
+mounts the calendar at `/calendar/` and the chatbot at `/chat/`, with a toggle
+in the header. Both use the same Neon database.
 
 ## 1. Create the Space
 
@@ -53,14 +54,15 @@ git push hf main:main
 If the Space already has a generated initial commit, use `git push -f hf main:main`
 (only on the Space remote — never force-push the GitHub remote).
 
-Hugging Face builds the Docker image from the root `Dockerfile`. The app listens
-on `PORT` (7860 on Spaces).
+Hugging Face builds the Docker image from the root `Dockerfile`. The portal listens
+on `PORT` (7860 on Spaces); open the root URL and switch apps with the toggle.
 
 ## 5. Verify
 
 - Wait for the build to show "Running"
-- Open the **App** tab → chat UI should load
-- `https://<space-url>/health` → `{"status":"ok"}`
+- Open the **App** tab → portal loads with Calendar active
+- Use the header toggle to switch to Chatbot
+- `https://<space-url>/health` → `{"status":"ok","apps":["calendar","chatbot"]}`
 - Send a normal text message. Voice works in browsers that support speech APIs,
   but voice quality work is intentionally deferred.
 

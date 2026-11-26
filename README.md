@@ -17,7 +17,8 @@ operation.
 ```
 main/
 ├── calendar/    # FastAPI calendar / scheduling API (port 8000)
-└── chatbot/     # LangGraph receptionist, text + voice (port 8001)
+├── chatbot/     # LangGraph receptionist, text + voice (port 8001)
+└── portal/      # one front door: toggle between calendar and chatbot
 ```
 
 The canonical Postgres schema lives in `calendar/backend/schema.py`. The chatbot
@@ -25,26 +26,30 @@ imports it rather than defining its own tables.
 
 ## Run locally
 
-From the repo root (`main/`):
+From the repo root (`main/`), start the combined portal — both services run in
+one process and the header toggle switches between them:
 
 ```bash
-# Terminal 1 - calendar
-cd calendar
-python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
+python -m uvicorn portal.app:app --host 127.0.0.1 --port 8010
+```
 
-# Terminal 2 - chatbot
-cd ../chatbot
-python -m uvicorn main:app --host 127.0.0.1 --port 8001
+Open **http://127.0.0.1:8010/** and use the **Calendar / Chatbot** toggle.
+The selection is kept in the URL hash (`#calendar` or `#chatbot`).
+
+The two apps also still run standalone if needed:
+
+```bash
+cd calendar && python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
+cd ../chatbot && python -m uvicorn main:app --host 127.0.0.1 --port 8001
 ```
 
 Health checks:
 
 ```bash
-curl http://127.0.0.1:8000/health   # {"status":"ok","data_source":"neon"}
-curl http://127.0.0.1:8001/health   # {"status":"ok"}
+curl http://127.0.0.1:8010/health        # {"status":"ok","apps":["calendar","chatbot"]}
+curl http://127.0.0.1:8010/calendar/health
+curl http://127.0.0.1:8010/chat/health
 ```
-
-Chat UI: http://127.0.0.1:8001/
 
 ## Configuration
 
