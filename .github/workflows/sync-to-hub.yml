@@ -1,11 +1,21 @@
 name: Sync to Hugging Face Space
 
 on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '.github/workflows/**'
   workflow_dispatch:
+
+concurrency:
+  group: hf-space-sync
+  cancel-in-progress: false
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v6
       - uses: huggingface/hub-sync@v0.3.0
