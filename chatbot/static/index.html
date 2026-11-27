@@ -40,19 +40,35 @@
 
     .composer-input::placeholder { color: #94a3b8; }
 
-    /* Phone: the bot owns the first screen. The live schedule sits below the
-       fold and the page scrolls down to it. */
+    /* Phone: the chat owns the whole viewport, so the composer stays visible
+       without scrolling. The live schedule becomes a panel opened from the
+       top-right button instead of sitting below the fold. */
     @media (max-width: 640px) {
-      main { padding: 0 !important; gap: 10px !important; }
-      .chat-panel {
-        height: 100vh !important;
+      html, body { height: 100%; }
+      body {
         height: 100dvh !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+      }
+      main {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        gap: 0 !important;
+        overflow: hidden !important;
+      }
+      .chat-panel {
+        flex: 1 1 auto !important;
+        height: auto !important;
         min-height: 0 !important;
         border: 0 !important;
         border-radius: 0 !important;
         box-shadow: none !important;
       }
-      #chatMessages { padding: 16px 14px !important; }
+      #chatMessages {
+        min-height: 0 !important;
+        padding: 16px 14px !important;
+      }
       #memoryBanner { padding: 6px 8px !important; margin: 0 !important; }
       .quick-prompts { padding: 6px 12px !important; }
       .composer { padding: 6px !important; border-radius: 22px !important; }
@@ -65,6 +81,32 @@
       #micBtn, #sendBtn { width: 32px !important; height: 32px !important; }
       .send-icon { font-size: 18px !important; }
       #doctorSelect, #scheduleDateInput { font-size: 16px; }
+
+      /* Mobile-only full-screen schedule panel. Desktop keeps the original
+         section below the chat, so these rules are scoped to this breakpoint. */
+      .schedule-panel {
+        display: none !important;
+        position: fixed !important;
+        inset: 0 !important;
+        z-index: 40 !important;
+        width: 100% !important;
+        max-width: none !important;
+        height: 100dvh !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: #f1f5f9 !important;
+      }
+      .schedule-panel.is-open { display: flex !important; }
+      .schedule-panel > div:first-child {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 1 !important;
+      }
     }
   </style>
 </head>
@@ -93,13 +135,24 @@
         </span>
         <button onclick="refreshSchedule()"
           aria-label="Sync grid"
-          class="px-2.5 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center">
+          class="hidden sm:flex px-2.5 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors items-center">
           <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
             </path>
           </svg>
           <span class="hidden sm:inline">Sync Grid</span>
+        </button>
+        <!-- Phone-only shortcut to the live schedule; desktop keeps it below chat. -->
+        <button id="toggleScheduleBtn" type="button" onclick="toggleSchedulePanel()"
+          aria-label="Show live schedule" aria-expanded="false" aria-controls="liveSchedule"
+          class="sm:hidden px-2.5 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors flex items-center">
+          <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+            </path>
+          </svg>
+          Grid
         </button>
       </div>
     </div>
@@ -226,8 +279,8 @@
     <!-- ========================================== -->
     <!-- Live Doctor Schedule & Admin               -->
     <!-- ========================================== -->
-    <section
-      class="w-full flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <section id="liveSchedule"
+      class="schedule-panel w-full flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
 
       <!-- Panel Header & Date / Doctor Selectors -->
       <div class="p-3 bg-slate-50 border-b border-slate-200 space-y-2.5">
@@ -236,7 +289,14 @@
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
             <h2 class="text-sm font-bold text-slate-800 leading-tight">Live Doctor Schedule</h2>
           </div>
-          <span class="text-[11px] text-slate-500 font-medium text-right leading-tight">10-min grace recycle</span>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="hidden sm:inline text-[11px] text-slate-500 font-medium text-right leading-tight">10-min grace recycle</span>
+            <button id="closeScheduleBtn" type="button" onclick="toggleSchedulePanel(false)"
+              aria-label="Close live schedule"
+              class="sm:hidden px-2.5 py-1 text-xs font-bold text-slate-600 bg-white border border-slate-300 rounded-lg">
+              ✕ Close
+            </button>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -385,6 +445,36 @@
       bindComposer();
       refreshSchedule();
       fetchMemory();
+    });
+
+    // Phone-only: swap between the full-screen chat and the live schedule
+    // panel without scrolling the page. Desktop ignores this class entirely.
+    function setSchedulePanel(open) {
+      const panel = document.getElementById('liveSchedule');
+      const btn = document.getElementById('toggleScheduleBtn');
+      if (!panel || !btn) return;
+      panel.classList.toggle('is-open', open);
+      btn.setAttribute('aria-expanded', String(open));
+      btn.setAttribute('aria-label', open ? 'Hide live schedule' : 'Show live schedule');
+      if (open) {
+        refreshSchedule();
+        panel.scrollTop = 0;
+        document.getElementById('closeScheduleBtn')?.focus();
+      } else {
+        btn.focus();
+      }
+    }
+
+    function toggleSchedulePanel(force) {
+      const panel = document.getElementById('liveSchedule');
+      const open = typeof force === 'boolean'
+        ? force
+        : !panel.classList.contains('is-open');
+      setSchedulePanel(open);
+    }
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') setSchedulePanel(false);
     });
 
     // ==========================================
